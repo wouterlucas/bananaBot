@@ -37,8 +37,8 @@ const parse = (msg) => {
         //strip prefix
         const cleanedMessage = msg.content.replace(config.prefix + ' ', '')
         //split by space
-        const arguments = cleanedMessage.split(' ')
-        const command = arguments[0]
+        const args = cleanedMessage.split(' ')
+        const command = args[0]
 
         if (!command)
             reject('Command not found')
@@ -48,7 +48,7 @@ const parse = (msg) => {
 
         //check if first argument resolves as a command
         if (isResolveable( command ))
-            commandsMap[ command ](arguments, msg).then(r => {
+            commandsMap[ command ](args, msg).then(r => {
                 resolve(r)
             })
     })

@@ -1,15 +1,14 @@
-const { getMaxListeners } = require('process')
-const db = require('../db')
 const permission = require('../permissions/index.js')
+const {user} = require('../data/user')
 
 const getOwner = async (message) => {
-    const owner = await permission.owner(message)
-    return { message : `Guild owner is ${owner}`}
+    const owner = await user(await permission.owner(message))
+    return { message : `Guild owner is ${owner.usershort}`}
 }
 
 const getDaddy = async (message) => {
-    const daddy = await permission.daddy(message)
-    return { message : `Daddy is ${daddy}`}
+    const daddy = await user(await permission.daddy(message))
+    return { message : `Daddy is ${daddy.usershort}`}
 }
 
 const getList = async (message) => {

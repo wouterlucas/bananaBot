@@ -1,17 +1,25 @@
 const Discord = require('discord.js')
+const { connect } = require('http2')
 const bot = new Discord.Client()
 const config = require('./config.js')
+const {initUser} = require('./src/data/user')
+
+initUser(bot)
 
 const commands = require('./src/commands')
 
-bot.login(config.token);
+const login = () => {
+    bot.login(config.token);
+}
 
 bot.on('ready', () => {
     console.log(`Logged in as ${bot.user.tag}!`)
 })
 
 bot.on('message', msg => {
-    console.log('onMessage: ', msg)
+    //easter egg
+    if (msg && msg.content && msg.content.toLocaleLowerCase().startsWith('good bot'))
+        return msg.channel.send('good hooman')
 
     if (msg && msg.content && msg.content.startsWith(config.prefix)) {
         console.log('Got message for BananaBot, resolving command!')
@@ -23,3 +31,10 @@ bot.on('message', msg => {
         })
     }
 })
+
+bot.on('disconnect', (errMsg, code) => {
+    console.log(`Bot disconnected with code: ${code} for reason: ${errMsg}`)
+    login()
+})
+
+login()
