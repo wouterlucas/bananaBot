@@ -23,6 +23,15 @@ const isResolveable = (command) => {
         return false
 }
 
+const getHelpMessage = () => {
+    let helpStr = "Hi! This is the Squashed Banana's Helper bot \n"
+    helpStr += 'Available commands: \n'
+    commandsArray.forEach(command => {
+        helpStr += `    ${command} \n`
+    })
+    return helpStr
+}
+
 const parse = (msg) => {
     return new Promise( (resolve, reject) => {
         //strip prefix
@@ -34,9 +43,12 @@ const parse = (msg) => {
         if (!command)
             reject('Command not found')
 
+        if (command === 'help')
+            resolve({ message : getHelpMessage() })
+
         //check if first argument resolves as a command
         if (isResolveable( command ))
-            commandsMap[ command ](arguments).then(r => {
+            commandsMap[ command ](arguments, msg).then(r => {
                 resolve(r)
             })
     })
