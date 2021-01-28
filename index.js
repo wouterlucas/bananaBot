@@ -3,6 +3,7 @@ const { connect } = require('http2')
 const bot = new Discord.Client()
 const config = require('./config.js')
 const {initUser} = require('./src/data/user')
+const replies = require('./src/replies')
 
 initUser(bot)
 
@@ -17,9 +18,18 @@ bot.on('ready', () => {
 })
 
 bot.on('message', msg => {
-    //easter egg
-    if (msg && msg.content && msg.content.toLocaleLowerCase().startsWith('good bot'))
-        return msg.channel.send('good hooman')
+    //ignore our own message
+    if (msg.author.username === 'BananaBot')
+        return
+
+    if (!msg || !msg.content)
+        return
+
+    // check plain replies before commands
+    Object.keys(replies).forEach(r => {
+        if (msg.content.toLocaleLowerCase().startsWith(r))
+            msg.channel.send(replies[r])
+    })
 
     if (msg && msg.content && msg.content.startsWith(config.prefix)) {
         console.log('Got message for BananaBot, resolving command!')

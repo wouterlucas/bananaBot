@@ -1,0 +1,13 @@
+{
+    "name": "BananaBot",
+    "version": "0.0.1",
+    "description": "",
+    "main": "index.js",
+    "dependencies": {
+      "aws-sdk": "^2.760.0",
+      "discord.js" : "^12.5.1"
+    },
+    "devDependencies": {},
+    "author": "",
+    "license": "MIT"
+}

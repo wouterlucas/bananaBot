@@ -4,16 +4,19 @@ const actions = require('./actions/index.js')
 let commandsMap = {}
 let commandsArray = []
 
-const register = (command, callback) => {
-    if (!commandsMap[command])
-        commandsMap[ command ] = callback
+const register = (commandString, command, subcommands) => {
+    if (!commandsMap[commandString])
+        commandsMap[ commandString ] = {
+            command : command,
+            subcommands : subcommands
+        }
 
     //update actions list
     commandsArray = Object.keys(commandsMap)
 }
 
 Object.keys(actions).forEach(a => {
-    register(actions[a].command, actions[a].action)
+    register(actions[a].commandString, actions[a].command, actions[a].subcommands)
 })
 
 const isResolveable = (command) => {
@@ -23,12 +26,34 @@ const isResolveable = (command) => {
         return false
 }
 
-const getHelpMessage = () => {
-    let helpStr = "**Hi!** This is the *Squashed Banana's* Helper bot \n\n"
-    helpStr += 'Available commands: \n'
-    commandsArray.forEach(command => {
-        helpStr += `    ${command} \n`
-    })
+const getHelpMessage = (subcommand) => {
+    let helpStr = "🍌 **Hi!** This is the *Squashed Banana's* Helper bot 🍌\n\n"
+
+    if (subcommand) {
+        if (commandsMap[subcommand] === undefined)
+            return 'Command not found, try help\n'
+
+        if (commandsMap[subcommand].subcommands === undefined)
+            return `Command ${subcommand} does not have any additional options\n`
+
+        helpStr += `Commands for ${subcommand}:\n`
+        const subcommandList = Object.keys(commandsMap[subcommand].subcommands)
+        subcommandList.forEach(command => {
+            helpStr += `    \`${command}\` \n`
+        })
+    } else {
+        helpStr += 'To interact with me please use:\n'
+        helpStr += `\`${config.prefix} <command> [<subcommand>] [<arguments>]\``
+        helpStr += '\n\n'
+
+        helpStr += 'Available commands:\n'
+        commandsArray.forEach(command => {
+            helpStr += `   \`${command} \`\n`
+        })
+
+        helpStr += `\n please use \`${config.prefix} help <subcommand>\` to learn more`
+    }
+
     return helpStr
 }
 
@@ -39,18 +64,28 @@ const parse = (msg) => {
         //split by space
         const args = cleanedMessage.split(' ')
         const command = args[0]
+        const subcommand = args[1]
 
         if (!command)
             reject('Command not found')
 
         if (command === 'help')
-            resolve({ message : getHelpMessage() })
+            resolve({ message : getHelpMessage(subcommand) })
 
         //check if first argument resolves as a command
-        if (isResolveable( command ))
-            commandsMap[ command ](args, msg).then(r => {
+        if (!isResolveable( command ))
+            resolve() // not found
+
+        //check if module has subcommands
+        if (commandsMap[command].subcommands !== undefined && subcommand !== undefined) {
+            return commandsMap[command].subcommands[subcommand](args, msg).then(r => {
                 resolve(r)
             })
+        }
+
+        commandsMap[ command ].command(args, msg).then(r => {
+            resolve(r)
+        })
     })
 }
 

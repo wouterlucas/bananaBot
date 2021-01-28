@@ -21,7 +21,7 @@ const addRole = async (guildId, roleId) => {
     if (accessList.roles !== undefined)
         accessList.roles = []
 
-    accessList.reoles.push(roleId)
+    accessList.roles.push(roleId)
     await db.put(guildId, 'accessList', accessList)
 }
 
@@ -64,11 +64,16 @@ const checkUserPermissions = async (message) => {
     }).length !== 0
 }
 
+const setupGuild = async (guildId) => {
+    return await db.createTable(guildId)
+}
+
 module.exports = {
     addUser,
     addRole,
     checkUserPermissions,
     daddy,
     getAccessList,
-    owner
+    owner,
+    setupGuild,
 }

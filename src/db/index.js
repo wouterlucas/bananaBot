@@ -1,20 +1,33 @@
+const config = require('../../config.js')
 const AWS = require('aws-sdk'); // eslint-disable-line import/no-extraneous-dependencies
 if (process.env.NODE_ENV === 'dev')
     AWS.config.update({region:'us-east-1'});
 
-let client = new AWS.DynamoDB.DocumentClient()
+let creds = 'default'
+if (config.awsProfile)
+    creds = new AWS.SharedIniFileCredentials({ profile: config.awsProfile })
 
-const get = (guildId, key) => {
+
+const TABLENAME = 'BananaBot'
+
+const client = new AWS.DynamoDB.DocumentClient({ credentials : creds})
+const dynamoDb = new AWS.DynamoDB({ credentials : creds })
+
+const get = (guildId, item) => {
     return new Promise( (resolve, reject) => {
         const params = {
-            TableName: guildId,
+            TableName: TABLENAME,
             Key: {
-                id: key
+                id: guildId
             }
         }
 
-        dynamoDb.get(params, (error, result) => {
-            if (error || (!result && !result.Item)) reject('Not found')
+        client.get(params, (error, result) => {
+            if (error) reject(error)
+
+            if (result === null)
+                return resolve({})
+
             resolve(result.Item)
         })
     })
@@ -23,14 +36,14 @@ const get = (guildId, key) => {
 const put = (guildId, key, item) => {
     return new Promise( (resolve, reject) => {
         const params = {
-            TableName: guildId,
+            TableName: TABLENAME,
             Item: {
-                id: key,
-                ...item
+                id: guildId,
+                key: item
             }
         }
 
-        dynamoDb.put(params, (error) => {
+        client.put(params, (error) => {
             if (error) reject(error)
             resolve()
         })
@@ -38,8 +51,9 @@ const put = (guildId, key, item) => {
 }
 
 
+
 module.exports = {
   get,
   put,
-  client
+  client: () => { return dynamoDb },
 }

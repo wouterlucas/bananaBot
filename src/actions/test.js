@@ -98,21 +98,11 @@ const channel = async (args, message) => {
     }
 }
 
-const command = 'test'
-const subcommands = {
-    'user' : user,
-    'roles' : roles,
-    'channel' : channel
-}
-
-const action = (arguments, message) => {
-    if (subcommands[ arguments[1] ] !== undefined)
-        return subcommands[ arguments[1] ](arguments, message)
-    else
-        return Promise.resolve()
-}
-
 module.exports = {
-    command,
-    action
+    commandString : 'test',
+    subcommands : {
+        'user' : user,
+        'roles' : roles,
+        'channel' : channel
+    }
 }

@@ -1,4 +1,3 @@
-const command = 'ping'
 const action = (arguments) => {
     return new Promise( resolve => {
         resolve({
@@ -8,6 +7,6 @@ const action = (arguments) => {
 }
 
 module.exports = {
-    command,
-    action
+    commandString : 'ping',
+    command : action
 }
