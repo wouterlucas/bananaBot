@@ -24,8 +24,10 @@ bot.on('message', msg => {
     if (msg && msg.content && msg.content.startsWith(config.prefix)) {
         console.log('Got message for BananaBot, resolving command!')
         commands.parse(msg).then(resp => {
-            if (resp.message)
+            if (resp && resp.message)
                 msg.channel.send(resp.message)
+            else
+                msg.channel.send('Command not found')
         }).catch(e => {
             console.log('Error parsing command: ', e)
         })

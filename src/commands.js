@@ -24,7 +24,7 @@ const isResolveable = (command) => {
 }
 
 const getHelpMessage = () => {
-    let helpStr = "Hi! This is the Squashed Banana's Helper bot \n"
+    let helpStr = "**Hi!** This is the *Squashed Banana's* Helper bot \n\n"
     helpStr += 'Available commands: \n'
     commandsArray.forEach(command => {
         helpStr += `    ${command} \n`
