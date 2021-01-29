@@ -1,7 +1,8 @@
 const permissions = require('../permissions/index.js')
 const {getGuild, getGuildId} = require('../data/guild')
 const {getType, types} = require('../data/types')
-const {getUser} = require('../data/user')
+const {getUser, getUserFromMessage} = require('../data/user')
+const {getRolesById} = require('../data/roles')
 
 const getOwner = async (args, message) => {
     const owner = await getUser(await permissions.owner(message))
@@ -16,7 +17,23 @@ const getDaddy = async (args, message) => {
 const getList = async (args, message) => {
     const guildId = getGuildId(message)
     const accessList = await permissions.getAccessList(guildId)
-    return { message: 'AccessList: ' + JSON.stringify(accessList) }
+
+    if (!accessList)
+        return { message: 'No access list configured' }
+
+    let responseStr = 'Access list:\n'
+    responseStr += '    Users: '
+    accessList.users.forEach(u => {
+        const _user = getUserFromMessage(message, u)
+        responseStr += _user.displayName + ', '
+    })
+    responseStr += '\n'
+    responseStr += '    Roles: '
+    accessList.roles.forEach(r => {
+        const _role = getRolesById(message, r)
+        responseStr +=  _role.name + ', '
+    })
+    return { message: responseStr }
 }
 
 const add = async (args, message) => {

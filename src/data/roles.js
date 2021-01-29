@@ -20,7 +20,15 @@ const getRolesForUser = (message, id) => {
     return user.roles.cache
 }
 
+const getRolesById = (message, id) => {
+    return getGuildRoles(message).filter(role =>{
+        if (role.id === id)
+            return true
+    })[0]
+}
+
 module.exports = {
     getGuildRoles,
-    getRolesForUser
+    getRolesForUser,
+    getRolesById
 }

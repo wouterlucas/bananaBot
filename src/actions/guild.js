@@ -58,7 +58,7 @@ const removeMemberFromGuild = async (args, message) => {
     let memberList = await db.get(guildId, 'guildMemberList')
 
     memberList = memberList.filter(member => {
-        if (type === types.user && member.id === id)
+        if ( (type === types.user || type === types.nickname) && member.id === id)
             return false
         if (type === types.unknown && member.name === args[2])
             return false
