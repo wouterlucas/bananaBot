@@ -5,9 +5,12 @@ const config = require('./config.js')
 const {initUser} = require('./src/data/user')
 const {initGuild} = require('./src/data/guild')
 const replies = require('./src/replies')
+const package = require('./package.json')
 
 initUser(bot)
 initGuild(bot)
+
+console.log('Starting BananaBot v' + package.version)
 
 const commands = require('./src/commands')
 

@@ -1,12 +1,27 @@
 const config = require('../../config.js')
 const AWS = require('aws-sdk'); // eslint-disable-line import/no-extraneous-dependencies
-if (process.env.NODE_ENV === 'dev')
-    AWS.config.update({region:'us-east-1'});
 
-let creds = 'default'
-if (config.awsProfile)
-    creds = new AWS.SharedIniFileCredentials({ profile: config.awsProfile })
+let creds = new AWS.EC2MetadataCredentials();
 
+const dev = process.env.dev || false
+const awsRegion = process.env.AWS_REGION || false
+const amazonRegion = process.env.AWS_REGION || false
+const defaultRegion = 'us-east-2'
+
+if (dev) {
+    AWS.config.update({region:'us-east-2'});
+    if (config.awsProfile)
+        creds = new AWS.SharedIniFileCredentials({ profile: config.awsProfile })
+} else {
+    let region = awsRegion || amazonRegion
+    if (!region) {
+        region = defaultRegion
+        console.log('No region received from AWS, using default')
+    }
+
+    console.log('AWS DB Using region', region)
+    AWS.config.update({region:region});
+}
 
 const TABLENAME = 'BananaBot'
 
