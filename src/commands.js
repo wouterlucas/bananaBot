@@ -5,11 +5,12 @@ const {checkUserPermissions} = require('./permissions/index')
 let commandsMap = {}
 let commandsArray = []
 
-const register = (commandString, command, subcommands) => {
-    if (!commandsMap[commandString])
-        commandsMap[ commandString ] = {
-            command : command,
-            subcommands : subcommands
+const register = (command) => {
+    if (!commandsMap[command.commandString])
+        commandsMap[ command.commandString ] = {
+            command : command.command,
+            subcommands : command.subcommands,
+            help : command.help
         }
 
     //update actions list
@@ -17,7 +18,7 @@ const register = (commandString, command, subcommands) => {
 }
 
 Object.keys(actions).forEach(a => {
-    register(actions[a].commandString, actions[a].command, actions[a].subcommands)
+    register(actions[a])
 })
 
 const isResolveable = (command) => {
@@ -34,13 +35,16 @@ const getHelpMessage = (subcommand) => {
         if (commandsMap[subcommand] === undefined)
             return 'Command not found, try help\n'
 
-        if (commandsMap[subcommand].subcommands === undefined)
-            return `Command ${subcommand} does not have any additional options\n`
+        if (commandsMap[subcommand].help === undefined)
+            return `Command ${subcommand} does not have any help defined\n`
 
         helpStr += `Commands for ${subcommand}:\n`
-        const subcommandList = Object.keys(commandsMap[subcommand].subcommands)
-        subcommandList.forEach(command => {
-            helpStr += `    \`${command}\` \n`
+
+        const helpObj = commandsMap[subcommand].help
+        const helpList = Object.keys(helpObj)
+        helpList.forEach(command => {
+            const commandPadding = command.padEnd(15 - command.length, ' ').replace(command, '')
+            helpStr += `    \`${command}\`${commandPadding} ${helpObj[command][0].padEnd(40, ' ')} - ${helpObj[command][1]} \n`
         })
     } else {
         helpStr += 'To interact with me please use:\n'

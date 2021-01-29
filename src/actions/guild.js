@@ -14,7 +14,8 @@ const getGuildList = async (args, message) => {
     responseStr       += '| ---------------- | ----------- | --------- |\n'
     memberList.forEach(member => {
         const user = getUserFromMessage(message, member.id)
-        responseStr   += `| ${member.name.padEnd(17, ' ')}| ${(member.role ? member.role : '').padEnd(11,' ')} | ${(user.presence.status).padEnd(9, ' ')} |\n`
+        const memberName = member.name.slice(0, 15)
+        responseStr   += `| ${memberName.padEnd(17, ' ')}| ${(member.role ? member.role : '').padEnd(11,' ')} | ${(user.presence.status).padEnd(9, ' ')} |\n`
     });
 
     responseStr += '```'
@@ -26,7 +27,7 @@ const addMemberToGuild = async (args, message) => {
     const guildId = getGuildId(message)
     const {type, id} = getType(args[2])
 
-    if (type === types.user)
+    if (type === types.channel || type === types.unknown || type === types.role)
         return { message: 'Please add by user, not role, channel or anything else'}
 
 
@@ -75,5 +76,10 @@ module.exports = {
         'list' : getGuildList,
         'add' : addMemberToGuild,
         'remove' : removeMemberFromGuild
+    },
+    help : {
+        'list' : ['','List all members in the guild'],
+        'add'  : ['<@mention> <role>','Add member to the guild'],
+        'remove' : ['<name in table>','Remove member from the guild']
     }
 }

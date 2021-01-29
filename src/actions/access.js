@@ -70,5 +70,13 @@ module.exports = {
         'add' : add,
         'remove' : remove,
         'check' : check,
+    },
+    help : {
+        'owner' : ['', 'Shows the owner of this guild and bot'],
+        'daddy'  : ['', "Whos BananaBot's daddy?"],
+        'list' : ['', 'List people who have access to the bot'],
+        'add' : ['<@role> or <@user>', 'Add role or user to the bot access list'],
+        'remove' : ['<@role> or <@user>', 'Remove role or access to the bot'],
+        'check' : ['(optional) <@user>', 'Check if user has access. If no user provided checks message author']
     }
 }

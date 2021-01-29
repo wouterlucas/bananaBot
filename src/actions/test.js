@@ -104,5 +104,8 @@ module.exports = {
         'user' : user,
         'roles' : roles,
         'channel' : channel
+    },
+    help: {
+        'sorry' : ['', 'This section is experimental and Mooshots is to lazy to write help messages for it. Learn to read code for this.']
     }
 }
