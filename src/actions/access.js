@@ -27,8 +27,38 @@ const add = async (args, message) => {
     } else if (type === types.user) {
         await permissions.addUser(guildId, id)
     } else {
-        return { message: 'Invalid role' }
+        return { message: 'Invalid user/role' }
     }
+
+    return { message: 'Done!' }
+}
+
+const remove = async (args, message) => {
+    const {type, id} = getType(args[2])
+    const guildId = getGuildId(message)
+    if (type === types.role) {
+        await permissions.removeRole(guildId, id)
+    } else if (type === types.user) {
+        await permissions.removeUser(guildId, id)
+    } else {
+        return { message: 'Invalid user/role' }
+    }
+
+    return { message: 'Done!' }
+}
+
+const check = async (args, message) => {
+    let byId = message.author.id
+    if (args[2]) {
+        const { type, id } = getType(args[2])
+        byId = id
+    }
+
+    if (!byId)
+        return { message : 'User not recognised'}
+
+    const hasAccess = await permissions.checkUserPermissions(byId, message)
+    return { message: `User ${byId} ${hasAccess === true ? 'has access' : 'do not have access'}` }
 }
 
 module.exports = {
@@ -37,6 +67,8 @@ module.exports = {
         'owner' : getOwner,
         'daddy' : getDaddy,
         'list' : getList,
-        'add' : add
+        'add' : add,
+        'remove' : remove,
+        'check' : check,
     }
 }

@@ -3,9 +3,11 @@ const { connect } = require('http2')
 const bot = new Discord.Client()
 const config = require('./config.js')
 const {initUser} = require('./src/data/user')
+const {initGuild} = require('./src/data/guild')
 const replies = require('./src/replies')
 
 initUser(bot)
+initGuild(bot)
 
 const commands = require('./src/commands')
 
@@ -32,12 +34,10 @@ bot.on('message', msg => {
     })
 
     if (msg && msg.content && msg.content.startsWith(config.prefix)) {
-        console.log('Got message for BananaBot, resolving command!')
+        console.log('Got command ' + msg.content)
         commands.parse(msg).then(resp => {
             if (resp && resp.message)
                 msg.channel.send(resp.message)
-            else
-                msg.channel.send('Command not found')
         }).catch(e => {
             console.log('Error parsing command: ', e)
         })

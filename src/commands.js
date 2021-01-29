@@ -1,5 +1,6 @@
 const config = require('../config.js')
 const actions = require('./actions/index.js')
+const {checkUserPermissions} = require('./permissions/index')
 
 let commandsMap = {}
 let commandsArray = []
@@ -57,36 +58,38 @@ const getHelpMessage = (subcommand) => {
     return helpStr
 }
 
-const parse = (msg) => {
-    return new Promise( (resolve, reject) => {
-        //strip prefix
-        const cleanedMessage = msg.content.replace(config.prefix + ' ', '')
-        //split by space
-        const args = cleanedMessage.split(' ')
-        const command = args[0]
-        const subcommand = args[1]
+const parse = async (msg) => {
+    //strip prefix
+    const cleanedMessage = msg.content.replace(config.prefix + ' ', '')
+    //split by space
+    const args = cleanedMessage.split(' ')
+    const command = args[0]
+    const subcommand = args[1]
 
-        if (!command)
-            reject('Command not found')
+    if (!command)
+        return { message: 'Command not found' }
 
-        if (command === 'help')
-            resolve({ message : getHelpMessage(subcommand) })
+    const authorId = msg.author.id
+    if (await checkUserPermissions(authorId, msg) === false)
+        return
 
-        //check if first argument resolves as a command
-        if (!isResolveable( command ))
-            resolve() // not found
+    if (command === 'help')
+        return { message : getHelpMessage(subcommand) }
 
-        //check if module has subcommands
-        if (commandsMap[command].subcommands !== undefined && subcommand !== undefined) {
-            return commandsMap[command].subcommands[subcommand](args, msg).then(r => {
-                resolve(r)
-            })
+    //check if first argument resolves as a command
+    if (!isResolveable( command ))
+        return
+
+    //check if module has subcommands
+    if (subcommand !== undefined) {
+        if (commandsMap[command].subcommands !== undefined && commandsMap[command].subcommands[subcommand] !== undefined) {
+            return await commandsMap[command].subcommands[subcommand](args, msg)
+        } else {
+            return { message: 'Subcommand not found' }
         }
+    }
 
-        commandsMap[ command ].command(args, msg).then(r => {
-            resolve(r)
-        })
-    })
+    return await commandsMap[ command ].command(args, msg)
 }
 
 module.exports = {

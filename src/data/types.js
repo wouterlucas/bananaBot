@@ -4,6 +4,7 @@ const types = {
     'user'    : '<@',
     'nickname': '<@!',
     'role'    : '<@&',
+    'unknown' : '????'
 }
 
 const getType = (string) => {
@@ -16,6 +17,8 @@ const getType = (string) => {
         type = types.user
     else if (string.startsWith(types.channel))
         type = types.channel
+    else
+        type = types.unknown
 
     id = string.replace(type, '').replace('>', '')
     return { type, id }

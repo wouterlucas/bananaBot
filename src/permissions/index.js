@@ -1,28 +1,69 @@
 const db = require('../db')
 const config = require('../../config.js')
+const {getRolesForUser} = require('../data/roles')
 
 const getAccessList = async (guildId) => {
     return await db.get(guildId, 'accessList')
 }
 
 const addUser = async (guildId, userId) => {
-    let accessList = await getAccessList(guildId)
+    let accessList = await getAccessList(guildId).catch(e => {})
 
-    if (accessList.users !== undefined)
-    accessList.users = []
+    if (!accessList)
+        accessList = {
+            users : [],
+            roles : []
+        }
+
+    if (accessList.users === undefined)
+        accessList.users = []
 
     accessList.users.push(userId)
     await db.put(guildId, 'accessList', accessList)
 }
 
-const addRole = async (guildId, roleId) => {
-    let accessList = await getAccessList(guildId)
+const removeUser = async (guildId, userId) => {
+    let accessList = await getAccessList(guildId).catch(e => {})
 
-    if (accessList.roles !== undefined)
+    if (!accessList)
+        return
+
+    if (accessList.users === undefined)
+        return
+
+    const index = accessList.users.indexOf(userId)
+    accessList.users.splice(index, 1)
+    await db.put(guildId, 'accessList', accessList)
+}
+
+const addRole = async (guildId, roleId) => {
+    let accessList = await getAccessList(guildId).catch(e => {})
+
+    if (!accessList)
+        accessList = {
+            users : [],
+            roles : []
+        }
+
+    if (accessList.roles === undefined)
         accessList.roles = []
 
     accessList.roles.push(roleId)
-    await db.put(guildId, 'accessList', accessList)
+    return await db.put(guildId, 'accessList', accessList)
+}
+
+const removeRole = async (guildId, roleId) => {
+    let accessList = await getAccessList(guildId).catch(e => {})
+
+    if (!accessList)
+        return
+
+    if (accessList.roles === undefined)
+        return
+
+    const index = accessList.roles.indexOf(roleId)
+    accessList.roles.splice(index, 1)
+    return await db.put(guildId, 'accessList', accessList)
 }
 
 const daddy = async () => {
@@ -33,11 +74,9 @@ const owner = async (message) => {
     return message.guild.ownerID
 }
 
-const checkUserPermissions = async (message) => {
+const checkUserPermissions = async (authorId, message) => {
     const guild = message.guild; // Gets guild from the Message object
     if (!guild.available) return false
-
-    const authorId = message.author.id
 
     if (authorId === message.guild.ownerID)
         return true
@@ -56,12 +95,20 @@ const checkUserPermissions = async (message) => {
         return true
 
     //last check, if the role of the author matches the allowed roles in the db
-    return accessList.roles.filter(role => {
-        //message.member.roles.find(role)
-        if (message.author.roles.find(role)){
+    const roles = getRolesForUser(message, authorId)
+
+    if (roles.length === 0)
+        return false
+
+    const res = roles.map(role => {
+        if (role.id)
+            return role.id
+    }).filter(roleId => {
+        if (accessList.roles.indexOf(roleId) !== -1)
             return true
-        }
-    }).length !== 0
+    })
+
+    return res.length !== 0
 }
 
 const setupGuild = async (guildId) => {
@@ -70,7 +117,9 @@ const setupGuild = async (guildId) => {
 
 module.exports = {
     addUser,
+    removeUser,
     addRole,
+    removeRole,
     checkUserPermissions,
     daddy,
     getAccessList,

@@ -7,6 +7,11 @@ const getUser = async (id) => {
     return user
 }
 
+const getUserFromGuild = async (guild, id) => {
+    const user = await guild.members.cache.get(id)
+    return user
+}
+
 const getUserFromMessage = (message, id) => {
     return message.guild.members.cache.map(u => {
         if (u.id === id)
@@ -31,5 +36,6 @@ module.exports = {
     initUser,
     getUser,
     getUserFromMessage,
-    getUserByNickname
+    getUserByNickname,
+    getUserFromGuild,
 }

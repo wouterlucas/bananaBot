@@ -18,7 +18,7 @@ const get = (guildId, item) => {
         const params = {
             TableName: TABLENAME,
             Key: {
-                id: guildId
+                guild: guildId
             }
         }
 
@@ -28,22 +28,25 @@ const get = (guildId, item) => {
             if (result === null)
                 return resolve({})
 
-            resolve(result.Item)
+            resolve(result.Item && result.Item[ item ])
         })
     })
 }
 
 const put = (guildId, key, item) => {
     return new Promise( (resolve, reject) => {
-        const params = {
+        let params = {
             TableName: TABLENAME,
-            Item: {
-                id: guildId,
-                key: item
+            Key: {
+                guild: guildId,
+            },
+            UpdateExpression: `set ${key} = :r`,
+            ExpressionAttributeValues : {
+                ':r' : item
             }
         }
 
-        client.put(params, (error) => {
+        client.update(params, (error) => {
             if (error) reject(error)
             resolve()
         })
