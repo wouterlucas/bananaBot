@@ -1,16 +1,16 @@
 const permissions = require('../permissions/index.js')
 const {getGuild, getGuildId} = require('../data/guild')
 const {getType, types} = require('../data/types')
-const {user} = require('../data/user')
+const {getUser} = require('../data/user')
 
 const getOwner = async (args, message) => {
-    const owner = await user(await permissions.owner(message))
-    return { message : `Guild owner is ${owner.usershort}`}
+    const owner = await getUser(await permissions.owner(message))
+    return { message : `Guild owner is ${owner.username}`}
 }
 
 const getDaddy = async (args, message) => {
-    const daddy = await user(await permissions.daddy(message))
-    return { message : `Daddy is ${daddy.usershort}`}
+    const daddy = await getUser(await permissions.daddy(message))
+    return { message : `Daddy is ${daddy.username}`}
 }
 
 const getList = async (args, message) => {
@@ -24,7 +24,7 @@ const add = async (args, message) => {
     const guildId = getGuildId(message)
     if (type === types.role) {
         await permissions.addRole(guildId, id)
-    } else if (type === types.user) {
+    } else if (type === types.user || type === types.nickname) {
         await permissions.addUser(guildId, id)
     } else {
         return { message: 'Invalid user/role' }
