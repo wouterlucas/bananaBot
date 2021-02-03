@@ -1,5 +1,5 @@
 const permissions = require('../permissions/index.js')
-const {getGuild, getGuildId} = require('../data/guild')
+const {getGuildId} = require('../data/guild')
 const {getType, types} = require('../data/types')
 const {getUser, getUserFromMessage} = require('../data/user')
 const {getRolesById} = require('../data/roles')

@@ -2,7 +2,6 @@ const {getUser, getUserFromMessage, getUserByNickname} = require('../data/user')
 const {getGuildRoles, getRolesForUser} = require('../data/roles')
 const {getChannelById, getChannelsForGuild, parseChannel} = require('../data/channel')
 const {types, getType} = require('../data/types')
-const { get } = require('http')
 
 const getId = (arg) => {
     if (arg) {
