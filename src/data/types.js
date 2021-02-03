@@ -1,4 +1,3 @@
-
 const types = {
     'channel' : '<#',
     'user'    : '<@',

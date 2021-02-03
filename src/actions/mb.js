@@ -169,7 +169,7 @@ const presenceCheckMb = async (args, message) => {
     channels.forEach(channel => {
         const isVoice = (channel.type === 'voice')
         const channelName = channel.name
-        if (channelName === 'Text Channels' || channelName === 'Voice Channels')
+        if (channel.type === 'category')
             return
 
         channel.members.forEach(member => {
