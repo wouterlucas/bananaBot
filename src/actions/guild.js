@@ -1,3 +1,5 @@
+const Discord = require('discord.js')
+
 const {getGuildId} = require('../data/guild')
 const {getType, types} = require('../data/types')
 const {getUser, getUserFromMessage} = require('../data/user')
@@ -10,17 +12,30 @@ const getGuildList = async (args, message) => {
     if (!memberList)
         return { message : 'No members added to guild list'}
 
-    let responseStr = '```| Member           | Role        | status    |\n'
-    responseStr       += '| ---------------- | ----------- | --------- |\n'
+    let members = { name: 'Member', inline: true, value: ''}
+    let roles = { name: 'Role', inline: true, value: ''}
+    let status = { name: 'Status', inline: true, value: ''}
+
     memberList.forEach(member => {
         const user = getUserFromMessage(message, member.id)
-        const memberName = member.name.slice(0, 15)
-        responseStr   += `| ${memberName.padEnd(17, ' ')}| ${(member.role ? member.role : '').padEnd(11,' ')} | ${(user.presence.status).padEnd(9, ' ')} |\n`
-    });
+        members.value += member.name + '\n'
+        roles.value += (member.role ? member.role : '') + '\n'
+        status.value += (user.presence ? user.presence.status : 'not found') + '\n'
+    })
 
-    responseStr += '```'
+    const guildEmbed = new Discord.MessageEmbed()
+        .setColor('#0099ff')
+        .setTitle(`Guild: ${message.guild.name}`)
+        .setFooter('BananaBot 🍌')
+        .setDescription('Member list')
+        .setTimestamp()
+        .addFields(
+            { name: '\u200B', value: '\u200B' },
+            members, roles, status,
+            { name: '\u200B', value: '\u200B' },
+        )
 
-    return { message : responseStr }
+    return { embed : guildEmbed }
 }
 
 const addMemberToGuild = async (args, message) => {

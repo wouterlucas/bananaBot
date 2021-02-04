@@ -39,8 +39,21 @@ bot.on('message', msg => {
     if (msg && msg.content && msg.content.startsWith(config.prefix)) {
         console.log('Got command ' + msg.content)
         commands.parse(msg).then(resp => {
-            if (resp && resp.message)
+            // single message
+            if (resp && resp.message) {
                 msg.channel.send(resp.message)
+            }
+
+            // handle multiple
+            if (resp && resp.messages) {
+                resp.messages.forEach(message => {
+                    msg.channel.send(message)
+                })
+            }
+
+            if (resp && resp.embed) {
+                msg.channel.send(resp.embed)
+            }
         }).catch(e => {
             console.log('Error parsing command: ', e)
         })

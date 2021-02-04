@@ -1,3 +1,5 @@
+const Discord = require('discord.js')
+
 const {getGuildId} = require('../data/guild')
 const {getType, types} = require('../data/types')
 const {getChannelsForGuild} = require('../data/channel')
@@ -5,55 +7,45 @@ const db = require('../db')
 
 const TABLENAME = 'memoryBank'
 
-const multilineString = (str, maxLength) => {
-    const stringArray = str.match(new RegExp('.{1,' + maxLength + '}', 'g'));
-    return stringArray || []
-}
+const getMbListResponse = (mbList, title = '') => {
+    let name = { name: 'Name', inline: true, value: ''}
+    let alts = { name: 'Alts', inline: true, value: ''}
+    let reason = { name: 'Reason', inline: true, value: ''}
 
-const getMbListResponse = (mbList) => {
-    let responseStr = '```| Name                 | Alts                                   | Reason                                                  |\n'
-    responseStr       += '| ==================== | ====================================== | ======================================================= |\n'
     mbList.forEach(entry => {
-        const nameLength = 20
-        const altLength = 38
-        const reasonLength = 55
+        name.value += entry.name + '\n'
 
-        const name = multilineString(entry.name, nameLength)
-        const alts = multilineString(entry.alts ? entry.alts.join(',') : '', altLength)
-        const reason = multilineString(entry.reason, reasonLength)
+        if (entry.alts && entry.alts.length > 0)
+            alts.value += entry.alts.join(',') + '\n'
+        else
+            alts.value += '-\n'
 
-        // write a multiline block
-        let index = 0
-        const createLineItem = (name, alts, reason, index) => {
-            const nameLine = (name[index] ? name[index] : '').padEnd(nameLength, ' ')
-            const altLine = (alts[index] ? alts[index] : '').padEnd(altLength, ' ')
-            const reasonLine = (reason[index] ? reason[index]: '').padEnd(reasonLength, ' ')
+        reason.value += entry.reason + '\n'
+    })
 
-            responseStr   += `| ${nameLine} | ${altLine} | ${reasonLine} |\n`
+    const mbEmbed = new Discord.MessageEmbed()
+        .setColor('#0099ff')
+        .setTitle(title)
+        .setFooter('BananaBot 🍌')
+        .setTimestamp()
+        .addFields(
+            { name: '\u200B', value: '\u200B' },
+            name, alts, reason,
+            { name: '\u200B', value: '\u200B' },
+        )
 
-            index++
-            if (name[index] || alts[index] || reason[index])
-                createLineItem(name, alts, reason, index)
-            else
-                responseStr += '| -------------------- | -------------------------------------- | ------------------------------------------------------- |\n'
-        }
-
-        createLineItem(name, alts, reason, index)
-    });
-
-    responseStr += '```'
-    return responseStr
+    return mbEmbed
 }
 
 const getMbList = async (args, message) => {
     const guildId = getGuildId(message)
 
     const mbList = await db.get(guildId, TABLENAME)
-    if (!mbList)
+    if (!mbList || mbList.length === 0)
         return { message : 'Memory bank is empty'}
 
 
-    return { message : getMbListResponse(mbList) }
+    return { embed : getMbListResponse(mbList, 'Memory Bank') }
 }
 
 const addToMb = async (args, message) => {
@@ -145,11 +137,12 @@ const searchMb = async (args, message) => {
     if (searchData.length === 0)
         return { message : 'Nothing found, im sorry. I might be broken, you might be broken. We\'re all broken' }
 
-    return { message: getMbListResponse(searchData) }
+    return { embed: getMbListResponse(searchData, 'Search') }
 }
 
 const presenceCheckMb = async (args, message) => {
     const guildId = getGuildId(message)
+    const name = args[2]
 
     const mbList = await db.get(guildId, TABLENAME)
     if (!mbList)
@@ -158,13 +151,16 @@ const presenceCheckMb = async (args, message) => {
     const flatMbList = []
     mbList.forEach(entry => {
         flatMbList.push(entry.name.toLowerCase())
-        if (entry.alts)
+        if (entry.alts && entry.alts.length > 0)
             entry.alts.forEach(alt => {
                 flatMbList.push(alt.toLowerCase())
             })
     })
 
-    let results = []
+    if (flatMbList.length === 0)
+        return { message: 'User not found' }
+
+    let results = {}
     const channels = getChannelsForGuild(message)
     channels.forEach(channel => {
         const isVoice = (channel.type === 'voice')
@@ -175,26 +171,53 @@ const presenceCheckMb = async (args, message) => {
         channel.members.forEach(member => {
             if (flatMbList.indexOf(member.user.username.toLowerCase()) !== -1 ||
                 flatMbList.indexOf(member.displayName.toLowerCase()) !== -1) {
-                results.push({
-                    name: member.displayName || member.user.username,
-                    isVoice : isVoice,
-                    channel: channelName
-                })
+
+                const memberName = member.user.username || member.displayName
+                if (results[memberName] === undefined)
+                    results[memberName] = {
+                        name : memberName,
+                        channels: [],
+                        isInVoice : false
+                    }
+
+                results[memberName].channels.push(channelName)
+
+                if (isVoice)
+                    results[memberName].isInVoice = true
             }
         })
     })
 
-    let responseStr = '```| Name                 | Channel                          | Voice?                   |\n'
-    responseStr       += '| -------------------- | -------------------------------- | ------------------------ |\n'
-    results.forEach(entry => {
-        const name = entry.name.slice(0,19)
-        const channel =entry.channel.slice(0, 31)
-        const voice = entry.isVoice ? 'Yes' : 'No'
-        responseStr   += `| ${name.padEnd(21, ' ')}| ${(channel).padEnd(32,' ')} | ${voice.padEnd(24, ' ')} |\n`
-    });
+    let resultName      = { name: 'Name', inline: true, value: ''}
+    let resultChannels  = { name: 'Channels', inline: true, value: ''}
+    let resultIsInVoice = { name: 'In Voice?', inline: true, value: ''}
 
-    responseStr += '```'
-    return { message: responseStr }
+    Object.keys(results).forEach(result => {
+        const res = results[result]
+        resultName.value += res.name + '\n'
+
+        const channelCount = res.channels.length
+        if (channelCount > 10)
+            resultChannels.value += res.channels.slice(0, 3).join(',') + `... and ${channelCount} more\n`
+        else
+        resultChannels.value += res.channels.join(',') + '...\n'
+
+        resultIsInVoice.value += (res.isInVoice ? 'Yes' : 'No') + '\n'
+    })
+
+    const presenceEmbed = new Discord.MessageEmbed()
+        .setColor('#0099ff')
+        .setTitle(`Memory bank presence check!`)
+        .setFooter('BananaBot 🍌')
+        .setDescription('Member list')
+        .setTimestamp()
+        .addFields(
+            { name: '\u200B', value: '\u200B' },
+            resultName, resultChannels, resultIsInVoice,
+            { name: '\u200B', value: '\u200B' },
+        )
+
+    return { embed: presenceEmbed }
 }
 
 module.exports = {
