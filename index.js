@@ -33,7 +33,7 @@ bot.on('message', msg => {
     // check plain replies before commands
     Object.keys(replies).forEach(r => {
         if (msg.content.toLocaleLowerCase().startsWith(r))
-            msg.channel.send(replies[r])
+            msg.channel.send(replies[r]).catch(e => { console.error('Failed to send message', e)})
     })
 
     if (msg && msg.content && msg.content.startsWith(config.prefix)) {
@@ -41,18 +41,18 @@ bot.on('message', msg => {
         commands.parse(msg).then(resp => {
             // single message
             if (resp && resp.message) {
-                msg.channel.send(resp.message)
+                msg.channel.send(resp.message).catch(e => { console.error('Failed to send message', e)})
             }
 
             // handle multiple
             if (resp && resp.messages) {
                 resp.messages.forEach(message => {
-                    msg.channel.send(message)
+                    msg.channel.send(message).catch(e => { console.error('Failed to send message', e)})
                 })
             }
 
             if (resp && resp.embed) {
-                msg.channel.send(resp.embed)
+                msg.channel.send(resp.embed).catch(e => { console.error('Failed to send message', e)})
             }
         }).catch(e => {
             console.log('Error parsing command: ', e)
