@@ -7,5 +7,5 @@ module.exports = {
     'good night' : 'I hope you brought 🍷',
     'good day' : "I hope you brough 🍌's to share!",
     'bananabread' : '🍌🍞',
-    'druid' : '**Druids** *hell yeah!!* 🐻 🐈 🦉 🐄'
+    'druids' : '**Druids** *hell yeah!!* 🐻 🐈 🦉 🐄'
 }

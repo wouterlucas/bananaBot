@@ -1,9 +1,9 @@
 const Discord = require('discord.js')
-const { connect } = require('http2')
 const bot = new Discord.Client()
 const config = require('./config.js')
 const {initUser} = require('./src/data/user')
 const {initGuild} = require('./src/data/guild')
+const reactions = require('./src/reactions')
 const replies = require('./src/replies')
 const package = require('./package.json')
 
@@ -32,8 +32,15 @@ bot.on('message', msg => {
 
     // check plain replies before commands
     Object.keys(replies).forEach(r => {
-        if (msg.content.toLocaleLowerCase().startsWith(r))
+        if (msg && msg.content && msg.content.toLocaleLowerCase().startsWith(r))
             msg.channel.send(replies[r]).catch(e => { console.error('Failed to send message', e)})
+    })
+
+    // check reactions before commands
+    Object.keys(reactions).forEach(reaction => {
+        if (msg && msg.content && msg.content.toLocaleLowerCase().indexOf(reaction) !== -1) {
+            reactions[reaction].forEach(r => { msg.react(r) })
+        }
     })
 
     if (msg && msg.content && msg.content.startsWith(config.prefix)) {
