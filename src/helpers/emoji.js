@@ -24,11 +24,15 @@ const class_emojis = {
 
 const role_emojis = {
     //'dps': '<:Dps:686182657738014738>',
-    'dps' : ':crossed_swords:',
+    'mdps' : ':crossed_swords:',
+    'rdps' : ':bow_and_arrow:',
     //'healer': '<:Healer:686182658161508362>',
-    'healer' : ':helmet_with_cross:',
+    'heals' : ':helmet_with_cross:',
     //'tank': '<:Tank:686182658065039384>'
-    'tank' : ':shield:'
+    'tank' : ':shield:',
+    'gearcheck' : ':white_check_mark:',
+    'nogearcheck' : ':heavy_multiplication_x:',
+    'progression' : ':zap:'
 }
 
 const getEmojiForClass = (emojiClass = '', spec = '') => {

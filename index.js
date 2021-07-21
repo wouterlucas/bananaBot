@@ -71,6 +71,13 @@ bot.on('message', msg => {
             if (resp && resp.embed) {
                 msg.channel.send(resp.embed).catch(e => { console.error('Failed to send message', e)})
             }
+
+            // handle multiple
+            if (resp && resp.embeds) {
+                resp.embeds.forEach(embed => {
+                    msg.channel.send(embed).catch(e => { console.error('Failed to send message', e)})
+                })
+            }
         }).catch(e => {
             console.log('Error parsing command: ', e)
         })

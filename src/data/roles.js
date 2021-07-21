@@ -9,7 +9,7 @@ const getGuildRoles = (message) => {
             deleted: role.deleted,
             editable: role.editable,
             hexColor: role.hexColor,
-            members: role.members.map(m => { return m.name }),
+            members: role.members,
             permissions: role.permissions
         }
     })
@@ -20,7 +20,14 @@ const getRolesForUser = (message, id) => {
     return user.roles.cache
 }
 
-const getRolesById = (message, id) => {
+const getRoleByName = (message, name) => {
+    return getGuildRoles(message).filter(role =>{
+        if (role.name === name)
+            return true
+    })[0]
+}
+
+const getRoleById = (message, id) => {
     return getGuildRoles(message).filter(role =>{
         if (role.id === id)
             return true
@@ -30,5 +37,6 @@ const getRolesById = (message, id) => {
 module.exports = {
     getGuildRoles,
     getRolesForUser,
-    getRolesById
+    getRoleById,
+    getRoleByName
 }
